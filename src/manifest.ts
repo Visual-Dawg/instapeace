@@ -16,7 +16,7 @@ export async function getManifest() {
     version: package_.version,
     description: package_.description,
     browser_action: {
-      default_icon: "./assets/icon-512.png",
+      default_icon: "./assets/logo.svg",
       default_popup: "./dist/popup/index.html",
     },
     background: {
@@ -24,9 +24,7 @@ export async function getManifest() {
       persistent: false,
     },
     icons: {
-      16: "./assets/icon-512.png",
-      48: "./assets/icon-512.png",
-      128: "./assets/icon-512.png",
+      16: "./assets/logo.svg",
     },
     permissions: ["tabs", "storage", "activeTab", "http://*/", "https://*/"],
     content_scripts: [
@@ -36,6 +34,9 @@ export async function getManifest() {
       },
     ],
     web_accessible_resources: ["dist/contentScripts/style.css"],
+    browser_specific_settings: {
+      gecko: { id: package_.author.email },
+    },
   }
 
   if (isDevelopment) {

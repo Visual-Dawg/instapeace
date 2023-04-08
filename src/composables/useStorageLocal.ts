@@ -7,6 +7,7 @@ import type {
   StorageLikeAsync,
   UseStorageAsyncOptions,
 } from "@vueuse/core"
+import type { IContentFeatureStorage } from "~/Types"
 
 const storageLocal: StorageLikeAsync = {
   removeItem(key: string) {
@@ -22,10 +23,16 @@ const storageLocal: StorageLikeAsync = {
   },
 }
 
-export function useStorageLocal<T>(
-  key: string,
-  initialValue: MaybeRef<T>,
+export function useStorageLocal<T extends keyof IContentFeatureStorage>(
+  key: T,
+  initialValue: MaybeRef<IContentFeatureStorage[T]>,
   options?: UseStorageAsyncOptions<T>
-): RemovableRef<T> {
-  return useStorageAsync(key, initialValue, storageLocal, options)
+): RemovableRef<IContentFeatureStorage[T]> {
+  return useStorageAsync(
+    key,
+    // @ts-expect-error
+    initialValue,
+    storageLocal,
+    options
+  ) as unknown as RemovableRef<IContentFeatureStorage[T]>
 }

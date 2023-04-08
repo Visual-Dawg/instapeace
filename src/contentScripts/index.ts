@@ -1,34 +1,24 @@
-/* eslint-disable no-console */
-import { onMessage } from "webext-bridge"
-import { createApp } from "vue"
-import App from "./views/App.vue"
-import { setupApp } from "~/logic/common-setup"
+import { mutationEmitter } from "./logic/mutationEmitter"
+import {
+  createHandleStorageUpdate,
+  initialiseActiveFeatures,
+} from "./logic/helper"
 
-// Firefox `browser.tabs.executeScript()` requires scripts return a primitive value
+import type { IEmitters } from "~/Types"
+
+import { contentFeatures } from "~/contentScripts/features"
+
+const emitters: IEmitters = { dom: mutationEmitter }
+
 ;(() => {
-    console.info("[vitesse-webext] Hello world from content script")
+  console.info("[ Instapeace ] Hello world from content script")
 
-    // communication example: send previous tab title from background page
-    onMessage("tab-prev", ({ data }) => {
-        console.log(`[vitesse-webext] Navigate from page "${data.title}"`)
-    })
+  initialiseActiveFeatures(emitters, contentFeatures)
 
-    // mount component to context window
-    const container = document.createElement("div")
-    const root = document.createElement("div")
-    const styleEl = document.createElement("link")
-    const shadowDOM =
-        container.attachShadow?.({ mode: __DEV__ ? "open" : "closed" }) ||
-        container
-    styleEl.setAttribute("rel", "stylesheet")
-    styleEl.setAttribute(
-        "href",
-        browser.runtime.getURL("dist/contentScripts/style.css")
-    )
-    shadowDOM.appendChild(styleEl)
-    shadowDOM.appendChild(root)
-    document.body.appendChild(container)
-    const app = createApp(App)
-    setupApp(app)
-    app.mount(root)
+  const handleStorageUpdate = createHandleStorageUpdate(
+    emitters,
+    contentFeatures
+  )
+
+  browser.storage.local.onChanged.addListener(handleStorageUpdate)
 })()

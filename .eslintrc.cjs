@@ -9,6 +9,7 @@ module.exports = {
     "@typescript-eslint/ban-ts-comment": "off",
     "import/named": "off",
     "no-undef": "off",
+    "antfu/if-newline": "off",
     "@typescript-eslint/no-explicit-any": [
       "error",
       {

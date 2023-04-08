@@ -1,10 +1,10 @@
 <script setup lang="ts">
-const props = defineProps<{ class: string }>()
+const properties = defineProps<{ class: string }>()
 </script>
 
 <template>
   <svg
-    :class="props.class"
+    :class="properties.class"
     width="200"
     height="200"
     viewBox="0 0 200 200"

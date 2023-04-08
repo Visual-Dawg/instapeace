@@ -1,0 +1,13 @@
+body,
+html {
+  @apply bg-dark-700 text-light-100;
+
+  font-family: monospace;
+}
+
+:root {
+  --dashed-color: theme("colors.dark.300");
+  --dashed-length: 10px;
+  --dashed-width: 3px;
+  --dashed-spacing: 20px;
+}

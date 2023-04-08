@@ -1,3 +1,4 @@
-import { useStorageLocal } from '~/composables/useStorageLocal'
+import { useStorageLocal } from "~/composables/useStorageLocal"
 
-export const storageDemo = useStorageLocal('webext-demo', 'Storage Demo')
+export const hideAdsStorage = useStorageLocal("hideAds", true)
+export const hideSuggestedStorage = useStorageLocal("hideSuggested", false)

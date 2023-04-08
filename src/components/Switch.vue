@@ -1,10 +1,12 @@
 <script setup lang="ts">
+import type { ISwitchState } from "~/Types"
+
 type Properties = {
-  modelValue: "off" | "on" | "middle"
+  modelValue: ISwitchState
 }
 
 const properties = withDefaults(defineProps<Properties>(), {
-  modelValue: "off",
+  modelValue: false,
 })
 
 const emit = defineEmits<{
@@ -12,16 +14,16 @@ const emit = defineEmits<{
 }>()
 
 function toggleState() {
-  properties.modelValue === "on"
-    ? emit("update:modelValue", "off")
-    : emit("update:modelValue", "on")
+  properties.modelValue
+    ? emit("update:modelValue", false)
+    : emit("update:modelValue", true)
 }
 </script>
 
 <template>
   <div
     class="flex border rounded-full relative h-5 w-10"
-    :class="properties.modelValue === 'on' ? 'bg-blue-500' : 'bg-gray-100'"
+    :class="properties.modelValue ? 'bg-blue-500' : 'bg-gray-100'"
     @click="toggleState()"
   >
     <!-- Circle -->
@@ -29,7 +31,7 @@ function toggleState() {
       class="rounded-full h-[1.125rem] w-[1.125rem]"
       transition="duration-150 all "
       :class="
-        properties.modelValue === 'on'
+        properties.modelValue
           ? 'bg-white translate-x-[20px] '
           : 'bg-gray-500 translate-x-[1px] '
       "
