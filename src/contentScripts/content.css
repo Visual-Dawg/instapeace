@@ -1,0 +1,6 @@
+.HIDING_CLASS {
+  background: red !important;
+  opacity: 0;
+  height: 10px !important;
+  max-height: 10px !important;
+}

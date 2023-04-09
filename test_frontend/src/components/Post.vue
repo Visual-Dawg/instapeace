@@ -24,13 +24,12 @@ const _: isPostTypeMatching<Post> = true
       <header class="">
         <canvas class="h-0 w-0"></canvas>
         <div class="flex gap-4 justify-between items-center">
-          <a :href="`/${profileName}`">
-            <img
-              src="/smiley.svg"
-              :alt="profileName"
-              class="h-8 text-yellow-600 w-8"
-            />
-          </a>
+          <img
+            src="/smiley.svg"
+            :alt="language.profilePictureAlt"
+            class="h-8 text-yellow-600 w-8"
+          />
+
           <div>{{ profileName }}</div>
           <div class="text-cyan-600">
             {{

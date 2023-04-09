@@ -1,9 +1,18 @@
-import { flow, pipe } from "fp-ts/function"
+import { pipe } from "fp-ts/function"
+import { match } from "ts-pattern"
 import * as A from "fp-ts/Array"
-import * as O from "fp-ts/Option"
 
 import { language } from "../Lang"
-import { HIDING_CLASS_NAME } from "../constants"
+
+import {
+  getBottomChildren,
+  getVisibleArticles,
+  hideAndMark,
+  isHTMLElement,
+  isPost,
+  unhideElements,
+  // unhideElements,
+} from "./domHelpers"
 
 import type { IEmitters, IMutationListener, IToggleFeature } from "~/Types"
 
@@ -12,103 +21,66 @@ const adMarkingClass = "__ad__"
 export const hideAdsFeature: IToggleFeature = {
   displayName: "Hide ads",
   name: "hideAds",
-  register: ({ dom }: IEmitters) => {
-    hideAdsInitialise()
+
+  register: async ({ dom }: IEmitters) => {
+    hideAds()
     dom.addEventListener("nodeAdded", hideAdsListener)
   },
-  unregister: ({ dom }: IEmitters) => {
-    unhideElements(adMarkingClass)
+
+  unregister: async ({ dom }: IEmitters) => {
+    unhideElements(adMarkingClass)()
+    console.log("Unregister hide ads")
     dom.removeEventListener("nodeAdded", hideAdsListener)
   },
 }
 
 const hideAdsListener: IMutationListener = {
-  callback: console.log,
+  callback: hideAdsCallback,
   priority: 9,
 }
 
-function hideAdsInitialise() {
-  pipe(getVisibleAds(), A.map(hideAndMark(adMarkingClass)))
-}
+async function hideAdsCallback(addedNodes: readonly Node[]) {
+  pipe(
+    addedNodes as Node[],
+    A.filter(isHTMLElement),
+    A.map((node) =>
+      match(node)
+        .when(isAdPost, hideAndMark(adMarkingClass))
 
-function isAdPost(node: Node): boolean {
-  if (!isPost(node)) return false
-
-  return pipe(
-    node.querySelector("header"),
-    O.fromNullable,
-    O.map(
-      flow(
-        getBottomChildren,
-        A.some(
-          (child) => (child as HTMLElement)?.innerText === language.sponsored
-        )
-      )
-    ),
-    O.getOrElse(() => false)
+        .otherwise(hideAds)
+    )
   )
 }
 
-function isPost(node: Node): node is HTMLElement {
-  if (node.nodeName !== "ARTICLE") return false
-
-  const element = node as HTMLElement
-
-  // Has profile picture
-  if (!element.querySelector(`header a [alt~='${language.profilePictureAlt}']`))
-    return false
-
-  if (!element.querySelector(`video, img`)) return false
-
-  return true
+/**
+ * Hide all ads on the page.
+ * @param startingNode The node to start from traversing. @default document
+ */
+function hideAds(startingNode?: HTMLElement) {
+  pipe(getVisibleAds(startingNode), A.map(hideAndMark(adMarkingClass)))
 }
 
-function getBottomChildren(node: Node) {
-  const children: Node[] = []
+function isAdPost(node: Node): node is HTMLElement {
+  if (!isPost(node)) return false
 
-  // eslint-disable-next-line unicorn/no-array-for-each
-  node.childNodes.forEach(recursion)
+  const header = node.querySelector("header")
 
-  return children
-
-  function recursion(node_: Node) {
-    if (node_.childNodes.length === 0) {
-      children.push(node_)
-      return
-    }
-
-    // eslint-disable-next-line unicorn/no-array-for-each
-    node_.childNodes.forEach(recursion)
-  }
+  return header
+    ? pipe(
+        header,
+        getBottomChildren,
+        A.some(
+          (child) =>
+            (child as HTMLElement)?.textContent?.toLocaleLowerCase() ===
+            language.sponsored.toLocaleLowerCase()
+        )
+      )
+    : false
 }
 
-// function getPosts() {
-//   return getVisibleArticles().filter(isPost)
-// }
+function getVisibleAds(startingNode: HTMLElement | Document = document) {
+  const articles = getVisibleArticles(startingNode)
+  const ads = articles.filter(isAdPost)
 
-function getVisibleArticles() {
-  return [
-    ...document.querySelectorAll(`article:not(.${HIDING_CLASS_NAME})`),
-  ] as unknown as readonly HTMLElement[]
-}
-
-function getVisibleAds() {
-  return getVisibleArticles().filter(isAdPost)
-}
-
-function hideAndMark(mark: string): (node: HTMLElement) => HTMLElement {
-  return (node) => {
-    node.classList.add(HIDING_CLASS_NAME)
-    node.classList.add(mark)
-
-    return node
-  }
-}
-
-function unhideElements(selector: string) {
-  for (const element of document.querySelectorAll(
-    `${HIDING_CLASS_NAME}.${selector}`
-  )) {
-    ;(element as HTMLElement).classList.remove(HIDING_CLASS_NAME)
-  }
+  return ads
 }

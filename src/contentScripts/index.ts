@@ -3,6 +3,7 @@ import {
   createHandleStorageUpdate,
   initialiseActiveFeatures,
 } from "./logic/helper"
+import css from "./content.css?raw"
 
 import type { IEmitters } from "~/Types"
 
@@ -21,4 +22,13 @@ const emitters: IEmitters = { dom: mutationEmitter }
   )
 
   browser.storage.local.onChanged.addListener(handleStorageUpdate)
+
+  linkCSS()
 })()
+
+function linkCSS() {
+  const link = document.createElement("style")
+  link.textContent = css
+
+  document.head.append(link)
+}
