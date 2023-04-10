@@ -1,11 +1,7 @@
 import { hideAdsFeature } from "./hideAds"
+import { hideSuggestedFeature } from "./hideSuggested"
 
-import type {
-  IEmitters,
-  IMutationListener,
-  IToggleFeature,
-  IToggleFeatureName,
-} from "~/Types"
+import type { IContentFeature, IContentFeatureName } from "~/Types"
 /**
  * Features which affect the loaded page (`DOM`).
  *
@@ -14,29 +10,10 @@ import type {
 export const contentFeatures = {
   hideAds: hideAdsFeature,
 
-  hideSuggested: {
-    displayName: "Hide suggested posts",
-    name: "hideSuggested",
-    register: (emitters: IEmitters) => {
-      emitters.dom.addEventListener("nodeAdded", hideSuggestedListener)
-
-      console.log("Register Hide suggested posts")
-    },
-    unregister: (emitters: IEmitters) => {
-      emitters.dom.removeEventListener("nodeAdded", hideSuggestedListener)
-
-      console.log("unregister hide suggested posts")
-    },
-  },
-} as const satisfies Record<IToggleFeatureName, IToggleFeature>
+  hideSuggested: hideSuggestedFeature,
+  //
+} as const satisfies Record<IContentFeatureName, IContentFeature>
 
 export const featureNames = Object.keys(
   contentFeatures
-) as readonly IToggleFeatureName[]
-
-const hideSuggestedListener: IMutationListener = {
-  priority: 0,
-  callback(mutations) {
-    console.log({ mutations })
-  },
-}
+) as readonly IContentFeatureName[]

@@ -14,13 +14,11 @@ export function unhideElements(
   selector: string
 ): (startingNode?: HTMLElement | Document) => void {
   return (startingNode = document) => {
-    const elementsToUnhide = startingNode.querySelectorAll(
-      `.${HIDING_CLASS_NAME}.${selector}`
-    )
-
-    for (const element of elementsToUnhide) {
-      ;(element as HTMLElement).classList.remove(HIDING_CLASS_NAME)
-    }
+    startingNode
+      .querySelectorAll(`.${HIDING_CLASS_NAME}.${selector}`)
+      .forEach((element) =>
+        (element as HTMLElement).classList.remove(HIDING_CLASS_NAME)
+      )
   }
 }
 
@@ -43,30 +41,34 @@ export function isPost(node: Node): node is HTMLElement {
 export function getBottomChildren(node: Node) {
   const children: Node[] = []
 
-  // eslint-disable-next-line unicorn/no-array-for-each
   node.childNodes.forEach(recursion)
 
   return children
 
-  function recursion(node_: Node) {
-    if (node_.childNodes.length === 0) {
-      children.push(node_)
+  function recursion(child: Node) {
+    if (child.childNodes.length === 0) {
+      children.push(child)
       return
     }
 
-    // eslint-disable-next-line unicorn/no-array-for-each
-    node_.childNodes.forEach(recursion)
+    child.childNodes.forEach(recursion)
   }
 }
 
-export function getVisibleArticles(
+export function getVisiblePosts(
   startingNode: HTMLElement | Document = document
 ) {
-  return [
-    ...startingNode.querySelectorAll(`article:not(.${HIDING_CLASS_NAME})`),
-  ] as unknown as readonly HTMLElement[]
+  return (
+    [
+      ...startingNode.querySelectorAll(`article:not(.${HIDING_CLASS_NAME})`),
+    ] as unknown as readonly HTMLElement[]
+  ).filter(isPost)
 }
 
 export function isHTMLElement(node: unknown): node is HTMLElement {
   return node instanceof HTMLElement
+}
+
+export function isVisible(element: HTMLElement) {
+  return !element.classList.contains(HIDING_CLASS_NAME)
 }

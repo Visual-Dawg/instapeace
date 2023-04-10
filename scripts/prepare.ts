@@ -2,11 +2,11 @@
 import { execSync } from "node:child_process"
 import fs from "fs-extra"
 import chokidar from "chokidar"
-import { isDev, log, port, r } from "./utils"
+import { isDevelopment, log, port, r } from "./utils"
 
 writeManifest()
 
-if (isDev) {
+if (isDevelopment) {
   stubIndexHtml()
   chokidar.watch(r("src/**/*.html")).on("change", () => {
     stubIndexHtml()

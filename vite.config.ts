@@ -11,7 +11,7 @@ import Components from "unplugin-vue-components/vite"
 import AutoImport from "unplugin-auto-import/vite"
 import UnoCSS from "unocss/vite"
 
-import { isDev as isDevelopment, port, r } from "./scripts/utils"
+import { isDevelopment as isDevelopment, port, r } from "./scripts/utils"
 
 import type { UserConfig } from "vite"
 

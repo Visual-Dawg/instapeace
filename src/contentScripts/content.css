@@ -1,3 +1,5 @@
+/* Instagram breaks when a post has no bounding box so we visually hide it.
+The height here is arbitrary */
 .HIDING_CLASS {
   background: red !important;
   opacity: 0;

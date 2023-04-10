@@ -10,6 +10,7 @@ module.exports = {
     "import/named": "off",
     "no-undef": "off",
     "antfu/if-newline": "off",
+    "unicorn/no-array-for-each": "off",
     "@typescript-eslint/no-explicit-any": [
       "error",
       {

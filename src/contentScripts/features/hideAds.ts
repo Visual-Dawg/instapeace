@@ -1,55 +1,47 @@
 import { pipe } from "fp-ts/function"
-import { match } from "ts-pattern"
 import * as A from "fp-ts/Array"
 
 import { language } from "../Lang"
 
 import {
   getBottomChildren,
-  getVisibleArticles,
+  getVisiblePosts,
   hideAndMark,
   isHTMLElement,
-  isPost,
+  isVisible,
   unhideElements,
-  // unhideElements,
 } from "./domHelpers"
 
-import type { IEmitters, IMutationListener, IToggleFeature } from "~/Types"
+import type { IContentFeature, IEmitters, IMutationListener } from "~/Types"
 
 const adMarkingClass = "__ad__"
 
-export const hideAdsFeature: IToggleFeature = {
+export const hideAdsFeature: IContentFeature = {
   displayName: "Hide ads",
   name: "hideAds",
 
   register: async ({ dom }: IEmitters) => {
     hideAds()
-    dom.addEventListener("nodeAdded", hideAdsListener)
+    dom.addEventListener("postAdded", hideAdsListener)
   },
 
   unregister: async ({ dom }: IEmitters) => {
     unhideElements(adMarkingClass)()
-    console.log("Unregister hide ads")
-    dom.removeEventListener("nodeAdded", hideAdsListener)
+    dom.removeEventListener("postAdded", hideAdsListener)
   },
 }
 
 const hideAdsListener: IMutationListener = {
   callback: hideAdsCallback,
-  priority: 9,
+  priority: 999,
 }
 
-async function hideAdsCallback(addedNodes: readonly Node[]) {
-  pipe(
-    addedNodes as Node[],
-    A.filter(isHTMLElement),
-    A.map((node) =>
-      match(node)
-        .when(isAdPost, hideAndMark(adMarkingClass))
-
-        .otherwise(hideAds)
-    )
-  )
+async function hideAdsCallback(addedPosts: readonly Node[]) {
+  addedPosts
+    .filter(isHTMLElement)
+    .filter(isVisible)
+    .filter(isAdPost)
+    .forEach(hideAndMark(adMarkingClass))
 }
 
 /**
@@ -57,13 +49,14 @@ async function hideAdsCallback(addedNodes: readonly Node[]) {
  * @param startingNode The node to start from traversing. @default document
  */
 function hideAds(startingNode?: HTMLElement) {
-  pipe(getVisibleAds(startingNode), A.map(hideAndMark(adMarkingClass)))
+  getVisibleAds(startingNode).forEach(hideAndMark(adMarkingClass))
 }
 
-function isAdPost(node: Node): node is HTMLElement {
-  if (!isPost(node)) return false
-
-  const header = node.querySelector("header")
+/**
+ * @param post A post, not a generic HTML element.
+ */
+function isAdPost(post: HTMLElement): boolean {
+  const header = post.querySelector("header")
 
   return header
     ? pipe(
@@ -79,8 +72,5 @@ function isAdPost(node: Node): node is HTMLElement {
 }
 
 function getVisibleAds(startingNode: HTMLElement | Document = document) {
-  const articles = getVisibleArticles(startingNode)
-  const ads = articles.filter(isAdPost)
-
-  return ads
+  return getVisiblePosts(startingNode).filter(isAdPost)
 }

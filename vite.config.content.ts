@@ -1,6 +1,8 @@
+/* eslint-disable import/no-default-export */
 import { defineConfig } from "vite"
+
 import { sharedConfig } from "./vite.config"
-import { isDev, r } from "./scripts/utils"
+import { isDevelopment, r } from "./scripts/utils"
 import packageJson from "./package.json"
 
 // bundling the content script using Vite
@@ -8,19 +10,19 @@ export default defineConfig({
   ...sharedConfig,
 
   define: {
-    __DEV__: isDev,
+    __DEV__: isDevelopment,
     // https://github.com/vitejs/vite/issues/9320
     // https://github.com/vitejs/vite/issues/9186
     "process.env.NODE_ENV": JSON.stringify(
-      isDev ? "development" : "production"
+      isDevelopment ? "development" : "production"
     ),
   },
   build: {
-    watch: isDev ? {} : undefined,
+    watch: isDevelopment ? {} : undefined,
     outDir: r("extension/dist/contentScripts"),
     cssCodeSplit: false,
     emptyOutDir: false,
-    sourcemap: isDev ? "inline" : false,
+    sourcemap: isDevelopment ? "inline" : false,
     lib: {
       entry: r("src/contentScripts/index.ts"),
       name: packageJson.name,

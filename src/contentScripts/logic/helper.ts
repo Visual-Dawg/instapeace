@@ -1,9 +1,9 @@
 import type { Storage } from "webextension-polyfill"
 import type {
+  IContentFeatureStorage,
+  IContentFeatureStorageChange,
+  IContentFeatures,
   IEmitters,
-  IToggleFeatures,
-  IToggleStorage,
-  IToggleStorageChange,
 } from "~/Types"
 
 import { featureNames } from "~/contentScripts/features"
@@ -11,21 +11,21 @@ import { jsonParse } from "~/logic/helper"
 
 export async function initialiseActiveFeatures(
   emitters_: IEmitters,
-  features: IToggleFeatures
+  features: IContentFeatures
 ) {
   const state = await browser.storage.local.get().then(parseStorage)
 
   for (const [name, isOn] of Object.entries(state)) {
     if (!isOn) return
 
-    features[name as keyof IToggleStorage].register(emitters_)
+    features[name as keyof IContentFeatureStorage].register(emitters_)
   }
 }
 
 export function parseStorageChange(
   storage: Storage.StorageAreaOnChangedChangesType
-): IToggleStorageChange {
-  const state = {} as IToggleStorageChange
+): IContentFeatureStorageChange {
+  const state = {} as IContentFeatureStorageChange
 
   for (const [key, value] of Object.entries(storage)) {
     // Not strictly necessary, but it his for safety
@@ -51,13 +51,15 @@ export function parseStorageChange(
  */
 export function createHandleStorageUpdate(
   emitters_: IEmitters,
-  features: IToggleFeatures
-): (storageState: Storage.StorageAreaSyncOnChangedChangesType) => void {
-  return (storageState) => {
+  features: IContentFeatures
+): (
+  storageState: Storage.StorageAreaSyncOnChangedChangesType
+) => Promise<void> {
+  return async (storageState) => {
     const parsedState = parseStorageChange(storageState)
 
     for (const name_ in parsedState) {
-      const name = name_ as keyof IToggleStorageChange
+      const name = name_ as keyof IContentFeatureStorageChange
 
       const { newValue, oldValue } = parsedState[name]
 
@@ -71,8 +73,10 @@ export function createHandleStorageUpdate(
   }
 }
 
-function parseStorage(storage: Record<string, unknown>): IToggleStorage {
-  const state = {} as IToggleStorage
+function parseStorage(
+  storage: Record<string, unknown>
+): IContentFeatureStorage {
+  const state = {} as IContentFeatureStorage
 
   for (const [key, value] of Object.entries(storage)) {
     // @ts-expect-error

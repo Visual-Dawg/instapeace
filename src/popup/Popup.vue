@@ -1,17 +1,7 @@
 <script setup lang="ts">
-import { hideAdsStorage } from "~/logic/storage"
-import { contentFeatures } from "~/contentScripts/features/index.js"
+import { hideAdsStorage, hideSuggestedStorage } from "~/logic/storage"
 
 console.log("Popup started...")
-
-function toggle(reference: Ref<boolean | undefined | null>): () => void {
-  return () =>
-    reference.value ? (reference.value = false) : (reference.value = true)
-}
-
-function toggleAds() {
-  toggle(hideAdsStorage)()
-}
 </script>
 
 <template>
@@ -25,17 +15,12 @@ function toggleAds() {
     </div>
 
     <!-- Setting toggles -->
-    <div class="flex flex-col gap-2" @click="toggleAds">
-      <Setting
-        :state="hideAdsStorage"
-        :feature="contentFeatures.hideAds"
-      ></Setting>
+    <div class="flex flex-col gap-2">
+      <Setting v-model="hideAdsStorage" label="Hide ads"></Setting>
+      <Setting v-model="hideSuggestedStorage" label="Hide suggested"></Setting>
     </div>
 
     <!-- Footer -->
-    <div class="mt-2">
-      <span class="opacity-50">Hide ads storage:</span>
-      {{ hideAdsStorage }}
-    </div>
+    <div class="mt-2"></div>
   </main>
 </template>

@@ -1,6 +1,6 @@
 import fs from "fs-extra"
 
-import { isDev as isDevelopment, port, r } from "../scripts/utils"
+import { isDevelopment as isDevelopment, port, r } from "../scripts/utils"
 
 import type { Manifest } from "webextension-polyfill"
 import type PackageType from "../package.json"

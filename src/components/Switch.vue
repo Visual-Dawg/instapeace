@@ -22,7 +22,7 @@ function toggleState() {
 
 <template>
   <div
-    class="flex border rounded-full relative h-5 w-10"
+    class="border rounded-full flex h-5 p-[1px] w-9 relative"
     :class="properties.modelValue ? 'bg-blue-500' : 'bg-gray-100'"
     @click="toggleState()"
   >
@@ -32,23 +32,9 @@ function toggleState() {
       transition="duration-150 all "
       :class="
         properties.modelValue
-          ? 'bg-white translate-x-[20px] '
-          : 'bg-gray-500 translate-x-[1px] '
+          ? 'bg-white translate-x-[100%] '
+          : 'bg-gray-500 translate-x-[0px] '
       "
     ></div>
   </div>
-  <!-- <
-      class="bg-white text-gray-800 rounded-lg shadow w-max h-min"
-      p="x-4 y-2"
-      m="y-auto r-2"
-      transition="opacity duration-300"
-      :class="show ? 'opacity-100' : 'opacity-0'"
-    > -->
-  <!-- <div
-      class="flex w-10 h-10 rounded-full shadow cursor-pointer"
-      bg="teal-600 hover:teal-700"
-      @click="toggle()"
-    >
-      <pixelarticons-power class="block m-auto text-white text-lg" />
-    </div> -->
 </template>
