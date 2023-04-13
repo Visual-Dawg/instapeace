@@ -1,13 +1,57 @@
-import { getVisiblePosts, isHTMLElement, isPost } from "../features/domHelpers"
+import {
+  getVisibleExploreThumbnails,
+  getVisiblePosts,
+  isExploreThumbnail,
+  isHTMLElement,
+  isPost,
+} from "./domHelpers"
+import {
+  exploreLocationRegex,
+  homeLocationRegex,
+  matchString,
+  postLocationRegex,
+} from "./helper"
 
-import type { IMutationListener } from "~/Types"
+import type {
+  IMutationEventName,
+  IMutationHandlers,
+  IMutationHandlersObject,
+} from "~/Types"
 
-type IMutationEventName = "nodeAdded" | "postAdded"
-type IListeners = Record<IMutationEventName, IMutationListener[]>
+const handlers: IMutationHandlersObject = {
+  nodeAdded: {
+    listeners: [],
+    locations: [/.*/],
+    order: 0,
+    getElements: (addedNodes) => addedNodes,
+  },
 
-const listeners: IListeners = {
-  nodeAdded: [],
-  postAdded: [],
+  postAdded: {
+    listeners: [],
+    locations: [homeLocationRegex, postLocationRegex],
+    order: 1,
+    getElements: (addedNodes) =>
+      addedNodes
+        .filter(isHTMLElement)
+        .flatMap((element) =>
+          isPost(element) ? element : getVisiblePosts(element)
+        ),
+  },
+
+  exploreThumbnailAdded: {
+    listeners: [],
+    locations: [exploreLocationRegex],
+    order: 1,
+    getElements: (addedNodes) =>
+      addedNodes
+        .filter(isHTMLElement)
+
+        .flatMap((element) =>
+          isExploreThumbnail(element)
+            ? element
+            : getVisibleExploreThumbnails(element)
+        ),
+  },
 }
 
 const observer = new MutationObserver(observerCallback)
@@ -25,86 +69,78 @@ export const mutationEmitter = {
 /// /////////////////////////////
 /// /////////////////////////////
 
+function executeListeners(
+  handlers_: IMutationHandlersObject,
+  addedNodes: readonly Node[]
+) {
+  Object.values(handlers_)
+    .filter((handler) => handler.listeners.length > 0)
+    .filter((handler) => handler.locations.some(matchString(location.pathname)))
+    .sort((a, b) => b.order - a.order)
+    .forEach((handler) => {
+      const addedElements = handler.getElements(addedNodes)
+
+      console.log({ addedElements })
+
+      if (addedElements.length === 0) return
+
+      for (const { callback } of handler.listeners) {
+        // @ts-expect-error
+        callback(addedElements)
+      }
+    })
+}
+
 function observerCallback(mutations: MutationRecord[]) {
   const addedNodes = mutations
     .filter((mutation) => mutation.addedNodes.length > 0)
     .flatMap((mutation) => [...mutation.addedNodes])
 
-  if (addedNodes.length === 0) {
-    return
-  }
+  if (addedNodes.length === 0) return
 
-  for (const listener of listeners.nodeAdded) {
-    listener.callback(addedNodes)
-  }
-
-  const addedElements = addedNodes.filter(isHTMLElement)
-
-  if (listeners.postAdded.length > 0) {
-    const posts = addedElements.flatMap((element) =>
-      isPost(element) ? element : getVisiblePosts(element)
-    )
-
-    if (posts.length === 0) return
-
-    for (const listener of listeners.postAdded) {
-      listener.callback(posts)
-    }
-  }
+  executeListeners(handlers, addedNodes)
 }
 
-function addEventListener(
-  event: IMutationEventName,
-  listener: IMutationListener
+function addEventListener<T extends IMutationEventName>(
+  event: T,
+  listener: IMutationHandlers[T]
 ) {
-  addListenerToState(event)(listener)
+  handlers[event].listeners.push(listener)
+  handlers[event].listeners.sort(
+    (a, b) => (b.priority ?? 0) - (a.priority ?? 0)
+  )
 
   if (!isObserving) {
     startObserving()
   }
 }
 
-function removeEventListener(
-  event: IMutationEventName,
-  listener: IMutationListener
+function removeEventListener<T extends IMutationEventName>(
+  event: T,
+  listener: IMutationHandlers[T]
 ) {
-  removeListenerFromState(event)(listener)
+  const indexToRemove = handlers[event].listeners.indexOf(listener)
 
-  if (!getHasListeners(listeners)) {
+  handlers[event].listeners.splice(indexToRemove, 1)
+
+  if (!getHasListeners(handlers)) {
     stopObserving()
   }
 }
 
-function addListenerToState(
-  eventName: IMutationEventName
-): (listener: IMutationListener) => void {
-  return (listener) => {
-    listeners[eventName].push(listener)
-    listeners[eventName].sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0))
-  }
-}
-
-function removeListenerFromState(
-  eventName: IMutationEventName
-): (listener: IMutationListener) => void {
-  return (listener) => {
-    const indexToRemove = listeners[eventName].indexOf(listener)
-
-    listeners[eventName].splice(indexToRemove, 1)
-  }
-}
-
-function getHasListeners(listenerState: IListeners): boolean {
-  return Object.values(listenerState).some((state) => state.length > 0)
+function getHasListeners(listenerState: IMutationHandlersObject): boolean {
+  return Object.values(listenerState).some(
+    (state) => state.listeners.length > 0
+  )
 }
 
 function startObserving() {
-  console.log("Started observing DOM")
+  console.info("Started observing DOM")
   observer.observe(document.body, { childList: true, subtree: true })
 }
 
 function stopObserving() {
   isObserving = false
-  console.log("Stopped observing DOM")
+  console.info("Stopped observing DOM")
   observer.disconnect()
 }

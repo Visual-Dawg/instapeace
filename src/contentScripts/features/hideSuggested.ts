@@ -2,7 +2,6 @@ import { pipe } from "fp-ts/function"
 import * as A from "fp-ts/Array"
 
 import { language } from "../Lang"
-
 import {
   getBottomChildren,
   getVisiblePosts,
@@ -10,9 +9,9 @@ import {
   isHTMLElement,
   isVisible,
   unhideElements,
-} from "./domHelpers"
+} from "../logic/domHelpers"
 
-import type { IContentFeature, IEmitters, IMutationListener } from "~/Types"
+import type { IContentFeature, IEmitters } from "~/Types"
 
 const suggestedMarkingClass = "__suggested__"
 
@@ -22,21 +21,21 @@ export const hideSuggestedFeature: IContentFeature = {
 
   register: async ({ dom }: IEmitters) => {
     hideSuggested()
-    dom.addEventListener("postAdded", hideSuggestedListener)
+    dom.addEventListener("postAdded", listener)
   },
 
   unregister: async ({ dom }: IEmitters) => {
     unhideElements(suggestedMarkingClass)()
-    dom.removeEventListener("postAdded", hideSuggestedListener)
+    dom.removeEventListener("postAdded", listener)
   },
 }
 
-const hideSuggestedListener: IMutationListener = {
-  callback: hideSuggestedCallback,
+const listener = {
+  callback,
   priority: 999,
 }
 
-async function hideSuggestedCallback(addedPosts: readonly Node[]) {
+async function callback(addedPosts: readonly Node[]) {
   addedPosts
     .filter(isHTMLElement)
     .filter(isVisible)

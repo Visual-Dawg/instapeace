@@ -32,7 +32,10 @@ export type ISwitchState = boolean | undefined
 /**
  * The names of the features which affect the page.
  */
-export type IContentFeatureName = "hideAds" | "hideSuggested"
+export type IContentFeatureName =
+  | "hideAds"
+  | "hideSuggested"
+  | "disableAutoplay"
 
 /**
  * The new state of the page features, excluding those which are only affecting the extension.
@@ -51,11 +54,53 @@ export type IContentFeatureStorage = {
   [key in keyof typeof contentFeatures]: boolean
 }
 
-export type IMutationListener = Readonly<{
+/**
+ * The emitters passed to the features `register` and `unregister`.
+ */
+export type IEmitters = {
+  dom: typeof mutationEmitter
+}
+
+export type IMutationHandlers = {
+  nodeAdded: CreateListener<(nodes: readonly Node[]) => void>
+  postAdded: CreateListener<(posts: readonly HTMLElement[]) => void>
+  exploreThumbnailAdded: CreateListener<
+    (posts: readonly HTMLLinkElement[]) => void
+  >
+}
+export type IMutationHandlerEmits = {
+  nodeAdded: readonly Node[]
+  postAdded: readonly HTMLElement[]
+  exploreThumbnailAdded: readonly HTMLLinkElement[]
+}
+
+export type IMutationHandlersObject = {
+  [Event in keyof IMutationHandlers]: Readonly<{
+    listeners: IMutationHandlers[Event][]
+    /**
+     * The order of the handler to run
+     */
+    order: number
+    /**
+     * At which pages / locations to run the listeners.
+     */
+    locations: readonly (string | RegExp)[]
+    /**
+     * Receives the added nodes, computes a value out of it and the result will later be used to call the listerners with it.
+     */
+    getElements: (
+      addedNodes: readonly Node[]
+    ) => Parameters<IMutationHandlers[Event]["callback"]>[0]
+  }>
+}
+
+export type IMutationEventName = keyof IMutationHandlers
+
+type CreateListener<T extends (...arguments_: any[]) => void> = Readonly<{
   /**
    * The callback to run when the DOM has changed
    */
-  callback: (mutations: readonly Node[] | readonly HTMLElement[]) => void
+  callback: T
 
   /**
    * The order of the execution of the callback. The highest gets executed first.
@@ -66,10 +111,3 @@ export type IMutationListener = Readonly<{
    */
   priority?: number
 }>
-
-/**
- * The emitters passed to the features `register` and `unregister`.
- */
-export type IEmitters = {
-  dom: typeof mutationEmitter
-}

@@ -14,6 +14,7 @@ const postsStore = usePostsStore()
       v-for="(post, index) in postsStore.posts"
       :key="index"
       :type="post.type"
+      :media="post.media"
     ></Post>
   </main>
 </template>

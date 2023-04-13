@@ -1,3 +1,5 @@
+import { match } from "ts-pattern"
+
 import type { Storage } from "webextension-polyfill"
 import type {
   IContentFeatureStorage,
@@ -6,7 +8,7 @@ import type {
   IEmitters,
 } from "~/Types"
 
-import { featureNames } from "~/contentScripts/features"
+import { mainFeatureNames } from "~/contentScripts/features"
 import { jsonParse } from "~/logic/helper"
 
 export async function initialiseActiveFeatures(
@@ -32,7 +34,7 @@ export function parseStorageChange(
     if (!Object.prototype.hasOwnProperty.call(storage, key)) {
       continue
     }
-    if (!(featureNames as string[]).includes(key)) {
+    if (!(mainFeatureNames as string[]).includes(key)) {
       continue
     }
 
@@ -85,3 +87,39 @@ function parseStorage(
 
   return state
 }
+
+/**
+ * Match a string against a string or a RegEx
+ */
+export function matchString(
+  toMatch: string
+): (matcher: string | RegExp) => boolean {
+  return (matcher) =>
+    typeof matcher === "string" ? matcher === toMatch : matcher.test(toMatch)
+}
+
+export function getLocation(): "home" | "explore" | "post" | "reels" {
+  return match(location.pathname)
+    .when(
+      (path) => postLocationRegex.test(path),
+      () => "post" as const
+    )
+    .when(
+      (path) => homeLocationRegex.test(path),
+      () => "home" as const
+    )
+    .when(
+      (path) => exploreLocationRegex.test(path),
+      () => "explore" as const
+    )
+    .when(
+      (path) => reelsLocationRegex.test(path),
+      () => "reels" as const
+    )
+    .run()
+}
+
+export const postLocationRegex = /^\/p\/[^#/?]*/
+export const exploreLocationRegex = /^\/explore\/[^#/?]*/
+export const reelsLocationRegex = /^\/reels\/[^#/?]*/
+export const homeLocationRegex = /^\/(?![^#?])/

@@ -65,10 +65,44 @@ export function getVisiblePosts(
   ).filter(isPost)
 }
 
+export function getVisibleExploreThumbnails(
+  startingNode: HTMLElement | Document = document
+) {
+  return [
+    ...startingNode.querySelectorAll(
+      `main a[href^="/p/"]:not(.${HIDING_CLASS_NAME})`
+    ),
+  ] as unknown as readonly HTMLLinkElement[]
+}
+
+/** Gets all thumbnails in the explore view, including hidden ones. */
+export function getAllExploreThumbnails(
+  startingNode: HTMLElement | Document = document
+) {
+  return [
+    ...startingNode.querySelectorAll('main a[href^="/p/"]'),
+  ] as unknown as readonly HTMLLinkElement[]
+}
+
+export function isExploreThumbnail(node: HTMLElement): node is HTMLLinkElement {
+  if (node.nodeName !== "A") return false
+
+  const hasMedia = !!node.querySelector("video, img")
+
+  return hasMedia
+}
+
 export function isHTMLElement(node: unknown): node is HTMLElement {
   return node instanceof HTMLElement
 }
 
 export function isVisible(element: HTMLElement) {
   return !element.classList.contains(HIDING_CLASS_NAME)
+}
+
+/**
+ * Gets all posts even if they are hidden
+ */
+export function getAllPosts(startingNode: HTMLElement | Document = document) {
+  return [...startingNode.querySelectorAll(`article`)].filter(isPost)
 }

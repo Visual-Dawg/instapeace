@@ -2,7 +2,6 @@ import { pipe } from "fp-ts/function"
 import * as A from "fp-ts/Array"
 
 import { language } from "../Lang"
-
 import {
   getBottomChildren,
   getVisiblePosts,
@@ -10,9 +9,9 @@ import {
   isHTMLElement,
   isVisible,
   unhideElements,
-} from "./domHelpers"
+} from "../logic/domHelpers"
 
-import type { IContentFeature, IEmitters, IMutationListener } from "~/Types"
+import type { IContentFeature, IEmitters } from "~/Types"
 
 const adMarkingClass = "__ad__"
 
@@ -22,21 +21,21 @@ export const hideAdsFeature: IContentFeature = {
 
   register: async ({ dom }: IEmitters) => {
     hideAds()
-    dom.addEventListener("postAdded", hideAdsListener)
+    dom.addEventListener("postAdded", listener)
   },
 
   unregister: async ({ dom }: IEmitters) => {
     unhideElements(adMarkingClass)()
-    dom.removeEventListener("postAdded", hideAdsListener)
+    dom.removeEventListener("postAdded", listener)
   },
 }
 
-const hideAdsListener: IMutationListener = {
-  callback: hideAdsCallback,
+const listener = {
+  callback,
   priority: 999,
 }
 
-async function hideAdsCallback(addedPosts: readonly Node[]) {
+async function callback(addedPosts: readonly HTMLElement[]) {
   addedPosts
     .filter(isHTMLElement)
     .filter(isVisible)

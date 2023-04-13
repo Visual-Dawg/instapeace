@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import { hideAdsStorage, hideSuggestedStorage } from "~/logic/storage"
+import {
+  disableAutoplayStorage,
+  hideAdsStorage,
+  hideSuggestedStorage,
+} from "~/logic/storage"
 
 console.log("Popup started...")
 </script>
@@ -18,6 +22,10 @@ console.log("Popup started...")
     <div class="flex flex-col gap-2">
       <Setting v-model="hideAdsStorage" label="Hide ads"></Setting>
       <Setting v-model="hideSuggestedStorage" label="Hide suggested"></Setting>
+      <Setting
+        v-model="disableAutoplayStorage"
+        label="Disable autoplay"
+      ></Setting>
     </div>
 
     <!-- Footer -->

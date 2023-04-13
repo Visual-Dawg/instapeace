@@ -12,7 +12,7 @@
       "@/*": ["./src/*"]
     },
     "target": "ESNext",
-    "lib": ["ESNext"]
+    "lib": ["ESNext", "DOM", "DOM.Iterable"]
   },
 
   "references": [

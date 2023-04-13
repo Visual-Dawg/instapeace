@@ -1,21 +1,12 @@
 <script setup lang="ts">
 import { RouterLink } from "vue-router"
 
-import { usePostsStore } from "@/stores/posts"
+import { router } from "@/router"
 
-import Button from "./Button.vue"
+import HomeActions from "./HomeActions.vue"
+import ExploreActions from "./ExploreActions.vue"
 
-const postsStore = usePostsStore()
-
-function addPost() {
-  postsStore.addPost({ type: "default" })
-}
-function addAd() {
-  postsStore.addPost({ type: "ad" })
-}
-function addSuggested() {
-  postsStore.addPost({ type: "suggested" })
-}
+const routes = router.getRoutes()
 </script>
 
 <template>
@@ -29,36 +20,33 @@ function addSuggested() {
     <div class="flex flex-col gap-8">
       <div class="">
         <div class="font-extrabold tracking-wide px-4 text-light-900/50">
-          actions
+          nav =>
         </div>
-        <nav class="font-medium text-lg pl-3 gap-6">
-          <div class="flex w-full dashed">
-            <Button @click="addPost">Add post</Button>
-          </div>
-          <div class="flex w-full dashed">
-            <Button @click="addAd">Add ad</Button>
-          </div>
-          <div class="flex w-full dashed">
-            <Button @click="addSuggested">Add suggested</Button>
-          </div>
+        <nav class="font-medium text-lg gap-6 underline">
+          <ul class="flex flex-col">
+            <li
+              v-for="{ path, name: label } in routes"
+              :key="path"
+              class="p-4 dashed"
+            >
+              <RouterLink :to="path">{{ label }}</RouterLink>
+            </li>
+          </ul>
         </nav>
       </div>
 
       <div class="">
         <div class="font-extrabold tracking-wide px-4 text-light-900/50">
-          nav =>
+          actions
         </div>
-        <nav class="font-medium text-lg gap-6 underline">
-          <ul class="flex flex-col">
-            <li class="p-4 dashed"><RouterLink to="/">Home</RouterLink></li>
-            <li class="p-4 dashed">
-              <RouterLink to="/reels">Reels</RouterLink>
-            </li>
-            <!-- <li class="p-4 dashed">
-              <RouterLink to="/userprofile">Userprofile</RouterLink>
-            </li> -->
-          </ul>
-        </nav>
+        <div class="">
+          <HomeActions v-if="router.currentRoute.value.name === 'home'">
+          </HomeActions>
+          <ExploreActions
+            v-else-if="router.currentRoute.value.name === 'explore'"
+          >
+          </ExploreActions>
+        </div>
       </div>
     </div>
   </nav>

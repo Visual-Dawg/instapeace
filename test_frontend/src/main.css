@@ -11,3 +11,15 @@ html {
   --dashed-width: 3px;
   --dashed-spacing: 20px;
 }
+
+.dashed-sm {
+  --dashed-length: 8px;
+  --dashed-spacing: 9px;
+  --dashed-width: 2px;
+}
+
+.dashed-lg {
+  --dashed-length: 18px;
+  --dashed-spacing: 30px;
+  --dashed-width: 6px;
+}

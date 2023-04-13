@@ -5,6 +5,7 @@ import type { IPost } from "@/Types"
 
 type Post = {
   type: "ad" | "default" | "suggested"
+  media?: "image" | "video"
 }
 
 const properties = defineProps<Post>()
@@ -45,9 +46,10 @@ const _: isPostTypeMatching<Post> = true
       <button>...</button>
     </div>
 
-    <!-- Post image -->
+    <!-- Post image / video -->
     <div class="">
       <img
+        v-if="properties.media === 'image' || properties.media === undefined"
         :src="
           properties.type === 'ad'
             ? '/red.svg'
@@ -57,6 +59,16 @@ const _: isPostTypeMatching<Post> = true
         "
         alt="Post alt text"
         class="w-full px-4 aspect-square"
+      />
+      <video
+        v-else
+        src="beeple_loop.mp4"
+        alt="Post alt text"
+        class="w-full px-4"
+        autoplay
+        muted
+        loop
+        controls
       />
     </div>
 
