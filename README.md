@@ -6,12 +6,15 @@
 <p align="center">
   <b>Webextension for Instagram</b>
   <br/>
-
-  <p >Be in control of your focus while browsing instagram</p>
-  <p>⚠️ Currently in devlopment</p>
+  Be in control of your focus while browsing instagram
+  <br/>
+  <br/>
+  ⚠️ Currently in development
 </p>
+</div>
 
-# Features
+
+## Features
 
 - Disable autoplay
 - Hide suggested images and videos
