@@ -45,7 +45,6 @@ const handlers: IMutationHandlersObject = {
     getElements: (addedNodes) =>
       addedNodes
         .filter(isHTMLElement)
-
         .flatMap((element) =>
           isExploreThumbnail(element)
             ? element
@@ -80,13 +79,11 @@ function executeListeners(
     .forEach((handler) => {
       const addedElements = handler.getElements(addedNodes)
 
-      console.log({ addedElements })
-
       if (addedElements.length === 0) return
 
-      for (const { callback } of handler.listeners) {
+      for (const listener of handler.listeners) {
         // @ts-expect-error
-        callback(addedElements)
+        listener.callback(addedElements)
       }
     })
 }

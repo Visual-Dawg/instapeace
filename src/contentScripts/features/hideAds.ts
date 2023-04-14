@@ -11,22 +11,23 @@ import {
   unhideElements,
 } from "../logic/domHelpers"
 
-import type { IContentFeature, IEmitters } from "~/Types"
+import type { IEmitters, IMainFeature } from "~/Types"
 
 const adMarkingClass = "__ad__"
 
-export const hideAdsFeature: IContentFeature = {
+export const hideAdsFeature: IMainFeature = {
   displayName: "Hide ads",
   name: "hideAds",
+  requiresSupportedLanguage: true,
 
   register: async ({ dom }: IEmitters) => {
     hideAds()
     dom.addEventListener("postAdded", listener)
-  },
 
-  unregister: async ({ dom }: IEmitters) => {
-    unhideElements(adMarkingClass)()
-    dom.removeEventListener("postAdded", listener)
+    return () => {
+      unhideElements(adMarkingClass)()
+      dom.removeEventListener("postAdded", listener)
+    }
   },
 }
 

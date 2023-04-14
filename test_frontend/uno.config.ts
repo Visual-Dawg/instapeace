@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-default-export
 import { defineConfig } from "unocss/vite"
 
 import base from "../unocss.config"

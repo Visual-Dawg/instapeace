@@ -1,0 +1,5 @@
+/* Targets the "Show older posts" link in the "Catched up" element at the end of the feed */
+main a[href^="/?variant"] {
+  /* The maximum height an element can have in Firefox. In Chrome it is way bigger. */
+  min-height: 17895697px !important;
+}

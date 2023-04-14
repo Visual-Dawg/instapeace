@@ -1,4 +1,7 @@
-const langContentText = {
+const supportedLanguages = ["en"] as const
+type SupportedLanguage = (typeof supportedLanguages)[number]
+
+const languageContent = {
   becauseYouLiked: { en: "Because you liked a post from" },
   follow: { en: "Follow" },
   viewAllComments: { en: "View all" },
@@ -7,24 +10,35 @@ const langContentText = {
   sponsored: { en: "sponsored" },
   suggestedForYou: { en: "Suggested for you" },
   profilePictureAlt: { en: "profile picture" },
-} satisfies Record<string, Record<SuppportedLanguage, string>>
+  photoBy: { en: "Photo by " },
+} as const satisfies Record<string, Record<SupportedLanguage, string>>
 
+const currentLanguage = getCurrentLanguage()
+
+export const isLanguageSupported = supportedLanguages.includes(
+  currentLanguage as SupportedLanguage
+)
 /**
  * Currently only english is supported
  */
-const currentLanguage: SuppportedLanguage = "en"
+export const language = getLanguageText(currentLanguage, "en", languageContent)
 
-export const language = getLanguageText(currentLanguage)
-
-function getLanguageText(lang: SuppportedLanguage) {
-  const texts = {}
-
-  for (const key in langContentText) {
-    // @ts-expect-error
-    texts[key] = langContentText[key][lang]
-  }
-
-  return texts as Record<keyof typeof langContentText, string>
+export function getCurrentLanguage(): string {
+  return document.documentElement.lang
 }
 
-type SuppportedLanguage = "en"
+function getLanguageText(
+  language_: string,
+  fallbackLanguage: SupportedLanguage,
+  content: typeof languageContent
+) {
+  const texts = {}
+  const usedLanguage = isLanguageSupported ? language_ : fallbackLanguage
+
+  for (const key in languageContent) {
+    // @ts-expect-error
+    texts[key] = content[key][usedLanguage]
+  }
+
+  return texts as Record<keyof typeof languageContent, string>
+}

@@ -1,40 +1,59 @@
 import { match } from "ts-pattern"
+import * as R from "remeda"
 
 import type { Storage } from "webextension-polyfill"
 import type {
-  IContentFeatureStorage,
-  IContentFeatureStorageChange,
-  IContentFeatures,
   IEmitters,
+  IMainFeatureName,
+  IMainFeatureStorage,
+  IMainFeatureStorageChange,
+  IMainFeatures,
+  IStorage,
 } from "~/Types"
 
 import { mainFeatureNames } from "~/contentScripts/features"
 import { jsonParse } from "~/logic/helper"
 
-export async function initialiseActiveFeatures(
-  emitters_: IEmitters,
-  features: IContentFeatures
-) {
-  const state = await browser.storage.local.get().then(parseStorage)
+export async function initialiseFeatures({
+  emitters,
+  features,
+  isLanguageSupported,
+}: {
+  emitters: IEmitters
+  features: IMainFeatures
+  isLanguageSupported: boolean
+}) {
+  const state = await getMainFeaturesStorage()
 
   for (const [name, isOn] of Object.entries(state)) {
-    if (!isOn) return
+    if (!isOn) continue
 
-    features[name as keyof IContentFeatureStorage].register(emitters_)
+    const feature = features[name as IMainFeatureName]
+
+    if (feature.requiresSupportedLanguage && !isLanguageSupported) {
+      browser.storage.local.set({ [name]: false })
+      continue
+    }
+
+    feature.register(emitters)
   }
 }
 
-export function parseStorageChange(
-  storage: Storage.StorageAreaOnChangedChangesType
-): IContentFeatureStorageChange {
-  const state = {} as IContentFeatureStorageChange
+async function getMainFeaturesStorage() {
+  return browser.storage.local
+    .get()
+    .then((state) => R.pick(state as IStorage, mainFeatureNames))
+    .then(parseStorage) as Promise<IMainFeatureStorage>
+}
+
+export function parseStorageChange<
+  T extends Storage.StorageAreaOnChangedChangesType
+>(storage: T): T {
+  const state = {} as T
 
   for (const [key, value] of Object.entries(storage)) {
-    // Not strictly necessary, but it his for safety
+    // Not strictly necessary, but it his here for added safety
     if (!Object.prototype.hasOwnProperty.call(storage, key)) {
-      continue
-    }
-    if (!(mainFeatureNames as string[]).includes(key)) {
       continue
     }
 
@@ -51,34 +70,37 @@ export function parseStorageChange(
 /**
  * Register and unregister toggled features.
  */
-export function createHandleStorageUpdate(
+export function createHandleMainFeatureStorageUpdate(
   emitters_: IEmitters,
-  features: IContentFeatures
+  features: IMainFeatures
 ): (
   storageState: Storage.StorageAreaSyncOnChangedChangesType
 ) => Promise<void> {
+  const unregisterRegistery: Partial<Record<IMainFeatureName, () => void>> = {}
+
   return async (storageState) => {
     const parsedState = parseStorageChange(storageState)
 
     for (const name_ in parsedState) {
-      const name = name_ as keyof IContentFeatureStorageChange
+      const name = name_ as keyof IMainFeatureStorageChange
+
+      if (!mainFeatureNames.includes(name)) continue
 
       const { newValue, oldValue } = parsedState[name]
 
       if (newValue && newValue !== oldValue) {
-        features[name].register(emitters_)
+        const unregister = await features[name].register(emitters_)
+        unregister && (unregisterRegistery[name] = unregister)
       }
       if (!newValue && newValue !== oldValue) {
-        features[name].unregister(emitters_)
+        unregisterRegistery[name]?.()
       }
     }
   }
 }
 
-function parseStorage(
-  storage: Record<string, unknown>
-): IContentFeatureStorage {
-  const state = {} as IContentFeatureStorage
+export function parseStorage<T extends Record<string, unknown>>(storage: T): T {
+  const state = {} as T
 
   for (const [key, value] of Object.entries(storage)) {
     // @ts-expect-error

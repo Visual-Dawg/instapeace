@@ -7,11 +7,12 @@ import {
 } from "../logic/domHelpers"
 import { getLocation } from "../logic/helper"
 
-import type { IContentFeature, IEmitters } from "~/Types"
+import type { IEmitters, IMainFeature } from "~/Types"
 
-export const disableAutoplayFeature: IContentFeature = {
+export const disableAutoplayFeature: IMainFeature = {
   displayName: "Hide suggested",
   name: "hideSuggested",
+  requiresSupportedLanguage: true,
 
   register: async ({ dom }: IEmitters) => {
     match(getLocation())
@@ -21,11 +22,11 @@ export const disableAutoplayFeature: IContentFeature = {
 
     dom.addEventListener("postAdded", postListener)
     dom.addEventListener("exploreThumbnailAdded", exploreListener)
-  },
 
-  unregister: async ({ dom }: IEmitters) => {
-    dom.removeEventListener("postAdded", postListener)
-    dom.removeEventListener("exploreThumbnailAdded", exploreListener)
+    return async () => {
+      dom.removeEventListener("postAdded", postListener)
+      dom.removeEventListener("exploreThumbnailAdded", exploreListener)
+    }
   },
 }
 
@@ -74,11 +75,13 @@ function pausePostVideo(container: HTMLElement): void {
 
   video.pause()
   // Thats nessecary because Instagram will start playing the video again if it was only paused
-  video.removeAttribute("src")
+  video.src = ""
 
   container.addEventListener("click", playOnClick)
 
-  console.log(video)
+  if (__DEV__) {
+    container.style.outline = "cyan solid 5px"
+  }
 
   function playOnClick() {
     video?.setAttribute("src", source as string)

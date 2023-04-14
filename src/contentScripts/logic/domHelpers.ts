@@ -1,12 +1,21 @@
 import { language } from "../Lang"
 import { HIDING_CLASS_NAME } from "../constants"
 
-export function hideAndMark(mark: string): (node: HTMLElement) => HTMLElement {
+export function hideAndMark(mark: string): (node: HTMLElement) => void {
   return (node) => {
-    node.classList.add(HIDING_CLASS_NAME)
     node.classList.add(mark)
+    node.classList.add(HIDING_CLASS_NAME)
+  }
+}
 
-    return node
+export function hideAndMarkIf(
+  mark: string,
+  check: ((node: HTMLElement) => boolean) | boolean
+): (node: HTMLElement) => void {
+  return (node) => {
+    if (typeof check === "boolean" ? !check : !check(node)) return
+
+    hideAndMark(mark)(node)
   }
 }
 

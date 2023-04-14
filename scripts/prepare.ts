@@ -1,7 +1,9 @@
 // generate stub index.html files for dev entry
 import { execSync } from "node:child_process"
+
 import fs from "fs-extra"
 import chokidar from "chokidar"
+
 import { isDevelopment, log, port, r } from "./utils"
 
 writeManifest()
@@ -24,13 +26,13 @@ function writeManifest() {
  * Stub index.html to use Vite in development
  */
 async function stubIndexHtml() {
-  const views = ["popup", "background"]
+  const views = ["popup"]
 
   for (const view of views) {
     await fs.ensureDir(r(`extension/dist/${view}`))
 
     const data = await fs
-      .readFile(r(`src/${view}/index.html`), "utf-8")
+      .readFile(r(`src/${view}/index.html`), "utf8")
       .then((fsData) =>
         fsData
           .replace('"./main.ts"', `"http://localhost:${port}/${view}/main.ts"`)
@@ -40,7 +42,7 @@ async function stubIndexHtml() {
           )
       )
 
-    await fs.writeFile(r(`extension/dist/${view}/index.html`), data, "utf-8")
+    await fs.writeFile(r(`extension/dist/${view}/index.html`), data, "utf8")
 
     log("PRE", `stub ${view}`)
   }

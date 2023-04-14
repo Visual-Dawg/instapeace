@@ -1,58 +1,73 @@
 import type { mutationEmitter } from "./contentScripts/logic/mutationEmitter"
-import type { contentFeatures } from "./contentScripts/features"
+import type { mainFeatures } from "./contentScripts/features"
 
 /**
  * A feature which interacts with the loaded page.
  */
-export type IContentFeature = {
+export type IMainFeature = {
   displayName: string
-  name: IContentFeatureName
+  name: IMainFeatureName
+  /** Used to prevent loading the feature when no supported language is used on the page. */
+  requiresSupportedLanguage: boolean
 
   /**
    * Runs when the feature gets activated.
    *
    * Usually manipulating the DOM and listening to changes in it.
+   *
+   * @returns The callback to run when unregistered.
    */
-  register: (emitters: IEmitters) => void
-
-  /**
-   * Runs when the feature gets deactivated.
-   * Usually cleans up listeners.
-   */
-  unregister: (emitters: IEmitters) => void
+  register: (
+    emitters: IEmitters
+  ) => Promise<() => Promise<void> | void> | Promise<void>
 }
 
-export type IContentFeatures = typeof contentFeatures
-
-/**
- * The state of a toggle. A boolean, but can be undefined if the toggle should be in the middle.
- */
-export type ISwitchState = boolean | undefined
+export type IMainFeatures = typeof mainFeatures
 
 /**
  * The names of the features which affect the page.
  */
-export type IContentFeatureName =
+export type IMainFeatureName =
   | "hideAds"
   | "hideSuggested"
   | "disableAutoplay"
+  | "disableInfiniteScroll"
 
 /**
  * The new state of the page features, excluding those which are only affecting the extension.
  */
-export type IContentFeatureStorageChange = Readonly<{
-  [Key in keyof IContentFeatureStorage]: {
-    oldValue: IContentFeatureStorage[Key]
-    newValue: IContentFeatureStorage[Key]
+export type IMainFeatureStorageChange = Readonly<{
+  [Key in keyof IMainFeatureStorage]: {
+    oldValue: IMainFeatureStorage[Key]
+    newValue: IMainFeatureStorage[Key]
   }
 }>
 
 /**
  * The type of the `storage` with the key value pairs
  */
-export type IContentFeatureStorage = {
-  [key in keyof typeof contentFeatures]: boolean
+export type IMainFeatureStorage = {
+  [Key in IMainFeatureName]: boolean
 }
+
+export type IStorage = {
+  [Key in IMainFeatureName | ISuggestSubFeaturesNames]: boolean
+}
+
+export type ISuggestSubFeaturesNames =
+  | "hideSuggestedImages"
+  | "hideSuggestedVideos"
+
+/**
+ * The type of the `storage` with the key value pairs
+ */
+export type ISuggestSubFeatureStorage = {
+  [Key in ISuggestSubFeaturesNames]: boolean
+}
+/**
+ * The state of a toggle. A boolean, but can be undefined if the toggle should be in the middle.
+ */
+export type ISwitchState = boolean | undefined
 
 /**
  * The emitters passed to the features `register` and `unregister`.

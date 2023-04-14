@@ -12,6 +12,7 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "noUnusedLocals": true,
+    "include": ["./shim.d.ts"],
     "forceConsistentCasingInFileNames": true,
     "types": ["vite/client"],
     "paths": {

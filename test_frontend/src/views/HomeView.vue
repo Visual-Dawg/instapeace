@@ -16,5 +16,13 @@ const postsStore = usePostsStore()
       :type="post.type"
       :media="post.media"
     ></Post>
+
+    <div class="flex flex-col p-6 px-12 gap-6 items-center dashed dashed-lg">
+      <div>You are all caught up</div>
+
+      <a href="/?variant" class="py-2 px-4 text-cyan-500 block dashed dashed-sm"
+        >View older posts</a
+      >
+    </div>
   </main>
 </template>

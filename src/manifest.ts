@@ -1,6 +1,6 @@
 import fs from "fs-extra"
 
-import { isDevelopment as isDevelopment, port, r } from "../scripts/utils"
+import { isDevelopment, port, r } from "../scripts/utils"
 
 import type { Manifest } from "webextension-polyfill"
 import type PackageType from "../package.json"
@@ -18,10 +18,6 @@ export async function getManifest() {
     browser_action: {
       default_icon: "./assets/logo.svg",
       default_popup: "./dist/popup/index.html",
-    },
-    background: {
-      page: "./dist/background/index.html",
-      persistent: false,
     },
     icons: {
       16: "./assets/logo.svg",
